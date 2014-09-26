@@ -7,3 +7,4 @@ exports.calculatePhases = fftjs.calculatePhases;
 exports.calculateMagnitudes = fftjs.calculateMagnitudes;
 exports.complexFromReal = fftjs.complexFromReal;
 exports.fft = fftjs.fft;
+exports.FFT_HAMMING = fftjs.FFT_HAMMING

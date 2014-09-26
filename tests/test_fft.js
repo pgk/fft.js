@@ -1,15 +1,12 @@
 var assert = require("chai").assert,
     fftlib = require("./../index"),
-    fft = fftlib.fft;
+    fft = fftlib.fft,
+    FFT_HAMMING = fftlib.FFT_HAMMING,
+    fixtures = require("./fixtures"),
+    sine = fixtures.sine;
+
 
 describe("FFT", function () {
-
-    var fftFunc = function (fftData, fftSize) {
-        var fftData = fftlib.hamming(fftData);
-        var complexData = fftlib.complexFromReal(fftData);
-        return fftlib.calculateMagnitudes(fft(complexData, fftSize, 1));
-
-    };
 
     it("should calculate DC correctly", function () {
 
@@ -29,7 +26,7 @@ describe("FFT", function () {
             fftData[i] = generatedSineData[i];
         }
 
-        assert(fftFunc(fftData, 1024)[0] >= 0.5, "DC component is greater than zero");
+        assert(FFT_HAMMING(fftData, 1024)[0] >= 0.5, "DC component is greater than zero");
     });
 
     it("should have the same fft size", function () {
@@ -55,10 +52,46 @@ describe("FFT", function () {
             fftData[i] = generatedSineData[i];
         }
 
-        var fftResults = fftFunc(fftData, fftSize)
+        var fftResults = FFT_HAMMING(fftData, fftSize)
 
         var baseFreq = SR / fftSize;
 
         assert(fftData.length == fftSize, "should be same as fft size");
+    });
+
+    it("FFT 1024 of a sine wave at 440 hz should have most of its energy near those bins", function () {
+
+        var size = sine.length,
+            SR = 44100,
+            fftSize = 1024,
+            i = 0,
+            baseFreq = SR / fftSize,
+            bin = {index: 0, value: 0.0},
+            generatedSineData = new Float32Array(size),
+            fftData = new Float32Array(fftSize),
+            fftResults,
+            freq;
+
+        for (i = 0; i < size; i++) {
+            t = i / size;
+            generatedSineData[i] = sine[i];
+        }
+
+        for (i = 0; i < fftSize; i++) {
+            fftData[i] = generatedSineData[i];
+        }
+
+        fftResults = FFT_HAMMING(fftData, fftSize)
+
+
+        for (i = 0; i < fftSize; i++) {
+            if (fftResults[i] > bin.value) {
+                bin.index = i;
+                bin.value = fftResults[i];
+            }
+        }
+
+        freq = baseFreq * bin.index;
+        assert((fftSize >= 420 && fftSize >= 460), "bin frequency" + freq + " should be around 440 hz");
     });
 });

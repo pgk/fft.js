@@ -1,28 +1,30 @@
 {
-  "name": "fft.js",
+  "name": "pgk-fft",
   "version": "0.0.1",
   "authors": [
     "Panos Kountanis <panosktn@gmail.com>"
   ],
   "description": "A straightforward FFT implementation in js",
-  "main": "fft.js",
+  "main": "dist/fft.js",
   "moduleType": [
     "amd",
     "globals",
     "node"
   ],
   "keywords": [
-    "js",
-    "spectrum",
     "audio",
     "fft",
     "dsp"
   ],
   "license": "MIT",
-  "homepage": "http://seerealized.com",
-  "private": true,
+  "homepage": "http://seerealized.com/about",
+  "private": false,
   "ignore": [
     "**/.*",
+    "index.js",
+    "Gruntfile.js",
+    "package.json",
+    "lib",
     "node_modules",
     "bower_components",
     "test",

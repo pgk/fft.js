@@ -16,7 +16,8 @@ module.exports = function(grunt) {
                 src: ["index.js"],
                 dest: './dist/<%= pkg.name %>.js',
                 options: {
-                    fft: "<%= pkg.name %>"
+                    fft: "<%= pkg.name %>",
+                    transform: ['debowerify', 'decomponentify', 'deamdify', 'deglobalify'],
                 }
             }
         },

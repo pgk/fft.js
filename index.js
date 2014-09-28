@@ -237,6 +237,8 @@
 	exp.complexFromReal = complexFromReal;
 	exp.fft = fft;
 	exp.FFT_HAMMING = FFT_HAMMING;
+	exp.newSlice = newSlice;
+	exp.cloneFrame = cloneFrame;
 
 	return exp;
 }));

@@ -1,11 +1,11 @@
 {
   "name": "pgk-fft",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "authors": [
     "Panos Kountanis <panosktn@gmail.com>"
   ],
   "description": "A straightforward FFT implementation in js",
-  "main": "dist/fft.js",
+  "main": "index.js",
   "moduleType": [
     "amd",
     "globals",

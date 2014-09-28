@@ -12,6 +12,9 @@ module.exports = function(grunt) {
             }
         },
         browserify: {
+            options: {
+                standalone: 'fft'
+            },
             fft: {
                 src: ["index.js"],
                 dest: './dist/<%= pkg.name %>.js',

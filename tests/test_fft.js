@@ -1,7 +1,6 @@
 var assert = require("chai").assert,
     fftlib = require("./../index"),
-    fft = fftlib.fft,
-    FFT_HAMMING = fftlib.FFT_HAMMING,
+    FFT = fftlib.FFT,
     fixtures = require("./fixtures"),
     sine = fixtures.sine;
 
@@ -26,7 +25,7 @@ describe("FFT", function () {
             fftData[i] = generatedSineData[i];
         }
 
-        assert(FFT_HAMMING(fftData, 1024)[0] >= 0.5, "DC component is greater than zero");
+        assert(FFT(fftData, 1024)[0] >= 0.5, "DC component is greater than zero");
     });
 
     it("should have the same fft size", function () {
@@ -52,7 +51,7 @@ describe("FFT", function () {
             fftData[i] = generatedSineData[i];
         }
 
-        var fftResults = FFT_HAMMING(fftData, fftSize)
+        var fftResults = FFT(fftData, fftSize)
 
         var baseFreq = SR / fftSize;
 
@@ -81,7 +80,7 @@ describe("FFT", function () {
             fftData[i] = generatedSineData[i];
         }
 
-        fftResults = FFT_HAMMING(fftData, fftSize)
+        fftResults = FFT(fftData, fftSize)
 
 
         for (i = 0; i < fftSize; i++) {

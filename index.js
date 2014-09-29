@@ -1,7 +1,7 @@
 
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['b'], factory);
+        define([], factory);
     } else if (typeof exports === 'object') {
         module.exports = factory();
     } else {
@@ -9,236 +9,239 @@
     }
 }(this, function () {   
 
-	var exp = {},
-	    TWO_PI = 2 * Math.PI,
-	    sin = Math.sin,
-	    wap,
-	    newSlice,
-	    cloneFrame;
+    var exp = {},
+        TWO_PI = 2 * Math.PI,
+        sin = Math.sin,
+        wap,
+        newSlice,
+        cloneFrame;
 
-	swap = function (data, i, j) {
-	    var tmpi = data[i];
+    swap = function (data, i, j) {
+        var tmpi = data[i];
 
-	    data[i] = data[j];
-	    data[j] = tmpi;
-	};
-
-
-	newSlice = function (source, size, offset) {
-	    var len = source.length,
-	        dataSlice = new Float32Array(size),
-	        remaining = len - offset;
-
-	    for (i = 0; i < size; i++) {
-	        dataSlice[i] = (remaining >= size) ? source[i + offset] : 0.0;
-	    }
-
-	    return dataSlice;
-	};
-
-	cloneFrame = function (frame) {
-	    return newSlice(frame, frame.length, 0);
-	}; 
-
-	/**
-	 * Compute the N size (I)FFT of a signal in place.
-	 * @function
-	 * @param {Float32Array} data - the complex signal data real and imaginary on consecutive indices
-	 * @param {int} n - FFT size. Should be a power of 2
-	 * @param {int} isign - [1, -1] if 1 compite FFT if -1 compute IFFT
-	 * @return {Float32Array} ref to data
-	 */
-	var fft = function (data, n, isign) {
-
-	    if (n < 2 || n&(n - 1)) {
-	        throw "N must be a power of 2";
-	    }
-
-	    var TwoN, mmax, m, j, istep, i,
-	        wtemp, wr, wpr, wpi, wi, theta, tempr, tempi;
+        data[i] = data[j];
+        data[j] = tmpi;
+    };
 
 
-	    TwoN = n * 2;
+    newSlice = function (source, size, offset) {
+        var len = source.length,
+            dataSlice = new Float32Array(size),
+            remaining = len - offset;
 
-	    j = 1;
+        for (i = 0; i < size; i++) {
+            dataSlice[i] = (remaining >= size) ? source[i + offset] : 0.0;
+        }
 
-	    for (i = 1; i < TwoN; i += 2) {
-	        if (j > i) {
-	            swap(data, j - 1, i - 1);
-	            swap(data, j, i);
-	        }
+        return dataSlice;
+    };
 
-	        m = n;
+    cloneFrame = function (frame) {
+        return newSlice(frame, frame.length, 0);
+    }; 
 
-	        while (m >= 2 && j > m) {
-	            j -= m;
-	            m = m >> 1;
-	        }
+    /**
+     * Compute the N size (I)FFT of a signal in place.
+     * @function
+     * @param {Float32Array} data - the complex signal data real and imaginary on consecutive indices
+     * @param {int} n - FFT size. Should be a power of 2
+     * @param {int} isign - [1, -1] if 1 compite FFT if -1 compute IFFT
+     * @return {Float32Array} ref to data
+     */
+    var fft = function (data, n, isign) {
 
-	        j += m;
+        if (n < 2 || n&(n - 1)) {
+            throw "N must be a power of 2";
+        }
 
-	    }
-
-	    mmax = 2;
-
-	    while (TwoN > mmax) {
-
-	        istep = mmax << 1;
-	        theta = isign * (TWO_PI / mmax);
-	        wtemp = sin(0.5 * theta);
-	        wpr = -2.0 * wtemp * wtemp;
-	        wpi = sin(theta);
-	        wr = 1.0;
-	        wi = 0.0;
-
-	        for (m = 1; m < mmax; m += 2) {
-	            for (i=m; i <= TwoN; i += istep) {
-	                j = i + mmax;
-	                tempr = wr * data[j - 1] - wi * data[j];
-	                tempi = wr * data[j] + wi * data[j-1];
-	                data[j-1] = data[i-1] - tempr;
-	                data[j] = data[i] - tempi;
-	                data[i-1] += tempr;
-	                data[i] += tempi;
-	            }
-	            wtemp = wr;
-	            wr = wr * wpr - wi * wpi + wr;
-	            wi = wi * wpr + wtemp * wpi + wi;
-	        }
-	        mmax = istep;
-	    }
-	    return data;
-	};
+        var TwoN, mmax, m, j, istep, i,
+            wtemp, wr, wpr, wpi, wi, theta, tempr, tempi;
 
 
-	/**
-	 * Convert Real valued signal to complex
-	 * @function
-	 * @param {Float32Array} realdata - real data signal
-	 * @return {Float32Array} - the converted signal. Note it has 2 * realdata.length items
-	 */  
-	var complexFromReal = function (realdata) {
-	  
-	    var i,j = 0, complexdata = new Float32Array(realdata.length * 2);
-	    for (i = 0; i < complexdata.length; i = i + 2) {
-	        complexdata[i] = realdata[j];
-	        complexdata[i + 1] = 0;
-	        j++;
-	    }
+        TwoN = n * 2;
 
-	    return complexdata;
-	};
+        j = 1;
 
-	/**
-	 * Convert Complex valued signal to magnitudes
-	 * @function
-	 * @param {Float32Array} data - complex data signal
-	 * @return {Float32Array} - the magnitudes
-	 */  
-	var calculateMagnitudes = function (data) {
-	    var len = data.length / 2,
-	        sqrt = Math.sqrt,
-	        magnitudes = new Float32Array(len), i, j, re, im, mag;
+        for (i = 1; i < TwoN; i += 2) {
+            if (j > i) {
+                swap(data, j - 1, i - 1);
+                swap(data, j, i);
+            }
 
-	    j = 0;
-	    for (i = 0; i < len; i = i + 2) {
-	        re = data[i];
-	        im = data[i + 1];
-	        mag = sqrt(re*re + im*im);
-	        magnitudes[j] = mag;
-	        j++;
-	    }
-	    return magnitudes;
-	};
+            m = n;
 
-	var calculatePhases = function (data) {
-	    var len = data.length / 2,
-	        atan = Math.atan,
-	        phases = new Float32Array(len), i, j, re, im;
+            while (m >= 2 && j > m) {
+                j -= m;
+                m = m >> 1;
+            }
 
-	    j = 0;
-	    for (i = 0; i < len; i = i + 2) {
-	        re = data[i];
-	        im = data[i + 1];
+            j += m;
 
-	        phases[j] = atan(im / re);
-	        j++;
-	    }
-	    return phases;
-	};
+        }
+
+        mmax = 2;
+
+        while (TwoN > mmax) {
+
+            istep = mmax << 1;
+            theta = isign * (TWO_PI / mmax);
+            wtemp = sin(0.5 * theta);
+            wpr = -2.0 * wtemp * wtemp;
+            wpi = sin(theta);
+            wr = 1.0;
+            wi = 0.0;
+
+            for (m = 1; m < mmax; m += 2) {
+                for (i=m; i <= TwoN; i += istep) {
+                    j = i + mmax;
+                    tempr = wr * data[j - 1] - wi * data[j];
+                    tempi = wr * data[j] + wi * data[j-1];
+                    data[j-1] = data[i-1] - tempr;
+                    data[j] = data[i] - tempi;
+                    data[i-1] += tempr;
+                    data[i] += tempi;
+                }
+                wtemp = wr;
+                wr = wr * wpr - wi * wpi + wr;
+                wi = wi * wpr + wtemp * wpi + wi;
+            }
+            mmax = istep;
+        }
+        return data;
+    };
 
 
+    /**
+     * Convert Real valued signal to complex
+     * @function
+     * @param {Float32Array} realdata - real data signal
+     * @return {Float32Array} - the converted signal. Note it has 2 * realdata.length items
+     */  
+    var complexFromReal = function (realdata) {
+      
+        var i,j = 0, complexdata = new Float32Array(realdata.length * 2);
+        for (i = 0; i < complexdata.length; i = i + 2) {
+            complexdata[i] = realdata[j];
+            complexdata[i + 1] = 0;
+            j++;
+        }
 
-	/**
-	 * Generate a hamming window.
-	 * @function
-	 * @param {Float32Array} data - A real valued signal
-	 * @return {Float32Array} - data multiplied by hamming function
-	 */
-	var hamming = function (data) {
-	    var i = 0,
-	        A = 0.54,
-	        B = 0.46,
-	        len = data.length,
-	        N = len - 1,
-	        result = new Float32Array(len),
-	        cos = Math.cos;
+        return complexdata;
+    };
 
-	    for (i = 0; i < len; i++) {
-	        result[i] = data[i] * (A - (B * cos(TWO_PI * i) / N));
-	    }
+    /**
+     * Convert Complex valued signal to magnitudes
+     * @function
+     * @param {Float32Array} data - complex data signal
+     * @return {Float32Array} - the magnitudes
+     */  
+    var calculateMagnitudes = function (data) {
+        var len = data.length / 2,
+            sqrt = Math.sqrt,
+            magnitudes = new Float32Array(len), i, j, re, im, mag;
 
-	    return result;
-	};
+        j = 0;
+        for (i = 0; i < len; i = i + 2) {
+            re = data[i];
+            im = data[i + 1];
+            mag = sqrt(re*re + im*im);
+            magnitudes[j] = mag;
+            j++;
+        }
+        return magnitudes;
+    };
 
+    var calculatePhases = function (data) {
+        var len = data.length / 2,
+            atan = Math.atan,
+            phases = new Float32Array(len), i, j, re, im;
 
-	var toDB = function (magnitudes) {
-	    var len = magnitudes.length,
-	        log10 = function (n) { return Math.log(n) / Math.LN10; },
-	        results = new Float32Array(len),
-	        i;
+        j = 0;
+        for (i = 0; i < len; i = i + 2) {
+            re = data[i];
+            im = data[i + 1];
 
-	    for (i = 0; i < len; i++) {
-	        results[i] = 20 * log10(magnitudes[i]);
-	    }
-
-	    return results;
-	};
-
-	var FFT = function (data, n) {
-	    var data = hamming(data);
-	    var complexData = complexFromReal(data);
-	    // return fft(complexData, n, 1);
-	    var fftResults = fft(complexData, n, 1);
-	    return toDB(calculateMagnitudes(fftResults));
-	};
-
-
-	/**
-	 * Real-value signal FFT with hamming window helper function.
-	 * @function
-	 * @param {Float32Array} data - A real valued signal
-	 * @param {int} size - Should be power of two
-	 * @return {Float32Array} - data multiplied by hamming function
-	 */
-	var FFT_HAMMING = function (data, fftSize) {
-	    var data = hamming(data),
-	        complexData = complexFromReal(data);
-
-	    return calculateMagnitudes(fft(complexData, fftSize, 1));
-
-	};
+            phases[j] = atan(im / re);
+            j++;
+        }
+        return phases;
+    };
 
 
-	exp.hamming = hamming;
-	exp.toDB = toDB;
-	exp.calculatePhases = calculatePhases;
-	exp.calculateMagnitudes = calculateMagnitudes;
-	exp.complexFromReal = complexFromReal;
-	exp.fft = fft;
-	exp.FFT_HAMMING = FFT_HAMMING;
-	exp.newSlice = newSlice;
-	exp.cloneFrame = cloneFrame;
 
-	return exp;
+    /**
+     * Generate a hamming window.
+     * @function
+     * @param {Float32Array} data - A real valued signal
+     * @return {Float32Array} - data multiplied by hamming function
+     */
+    var hamming = function (data) {
+        var i = 0,
+            A = 0.54,
+            B = 0.46,
+            len = data.length,
+            N = len - 1,
+            result = new Float32Array(len),
+            cos = Math.cos;
+
+        for (i = 0; i < len; i++) {
+            result[i] = data[i] * (A - (B * cos(TWO_PI * i) / N));
+        }
+
+        return result;
+    };
+
+
+    var toDB = function (magnitudes) {
+        var len = magnitudes.length,
+            log10 = function (n) { return Math.log(n) / Math.LN10; },
+            results = new Float32Array(len),
+            i;
+
+        for (i = 0; i < len; i++) {
+            results[i] = 20 * log10(magnitudes[i]);
+        }
+
+        return results;
+    };
+
+    var FFT = function (data, n) {
+        var data = hamming(data);
+        var complexData = complexFromReal(data);
+        // return fft(complexData, n, 1);
+        var fftResults = fft(complexData, n, 1);
+        return toDB(calculateMagnitudes(fftResults));
+    };
+
+
+    /**
+     * Real-value signal FFT with hamming window helper function.
+     * @function
+     * @param {Float32Array} data - A real valued signal
+     * @param {int} size - Should be power of two
+     * @return {Float32Array} - data multiplied by hamming function
+     */
+    var FFT_HAMMING = function (data, fftSize) {
+        var data = hamming(data),
+            complexData = complexFromReal(data);
+
+        return calculateMagnitudes(fft(complexData, fftSize, 1));
+
+    };
+
+
+    exp.windowing_functions = {hamming: hamming};
+    exp.util = {
+        toDB: toDB,
+        calculatePhases: calculatePhases,
+        calculateMagnitudes: calculateMagnitudes,
+        complexFromReal: complexFromReal,
+        slice: newSlice,
+        clone: cloneFrame
+    };
+
+    exp._fft = fft;
+    exp.FFT = FFT_HAMMING;
+
+    return exp;
 }));
